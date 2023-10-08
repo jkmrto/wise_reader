@@ -13,9 +13,10 @@ defmodule WiseReader.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: WiseReader.PubSub},
       # Start the Endpoint (http/https)
-      WiseReaderWeb.Endpoint
+      WiseReaderWeb.Endpoint,
       # Start a worker by calling: WiseReader.Worker.start_link(arg)
       # {WiseReader.Worker, arg}
+      WiseReader.Repo
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

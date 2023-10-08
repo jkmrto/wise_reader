@@ -7,6 +7,12 @@
 # General application configuration
 import Config
 
+config :wise_reader, WiseReader.Repo,
+  database: "wise_reader_repo",
+  username: "user",
+  password: "pass",
+  hostname: "localhost"
+
 config :wise_reader,
   generators: [binary_id: true]
 
