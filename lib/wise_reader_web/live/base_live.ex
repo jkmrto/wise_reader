@@ -1,8 +1,37 @@
 defmodule WiseReaderWeb.BaseLive do
   use WiseReaderWeb, :live_view
 
+  def mount(_params, _session, socket) do
+    transactions = WiseReader.Transaction.dummy()
+    {:ok, assign(socket, :transactions, transactions)}
+  end
+
+  def handle_event("refresh", _value, socket) do
+    IO.inspect("Refreshing event was there")
+
+    {:ok, response} = WiseReader.WiseClient.call()
+
+    transactions =
+      response.body
+      |> Jason.decode!()
+      |> WiseReader.Transaction.process_transations()
+
+    {:noreply, assign(socket, :transactions, transactions)}
+  end
+
+  defp bg_row(index) do
+    if rem(index, 2) == 0, do: "bg-gray-100", else: "bg-white"
+  end
+
   def render(assigns) do
     ~H"""
+    <button
+      phx-click="refresh"
+      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+    >
+      Refresh
+    </button>
+
     <div class="flex flex-col">
       <div class="sm:mx-0.5 lg:mx-0.5">
         <div class="py-2 inline-block  sm:px-6">
@@ -19,7 +48,7 @@ defmodule WiseReaderWeb.BaseLive do
                   </th>
 
                   <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                    Amount
+                    Amount (€)
                   </th>
 
                   <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
@@ -54,14 +83,5 @@ defmodule WiseReaderWeb.BaseLive do
       </div>
     </div>
     """
-  end
-
-  def mount(_params, _session, socket) do
-    transactions = WiseReader.Transaction.dummy()
-    {:ok, assign(socket, :transactions, transactions)}
-  end
-
-  def bg_row(index) do
-    if rem(index, 2) == 0, do: "bg-gray-100", else: "bg-white"
   end
 end

@@ -2,7 +2,7 @@ defmodule WiseReader.WiseClient do
   def call() do
     #    url = "https://api.transferwise.com/v4/profiles/13675836/balances\?types\=STANDARD"
     url =
-      "https://api.transferwise.com/v1/profiles/13675836/balance-statements/11835403/statement.json?currency=EUR&intervalStart=2023-01-01T00:00:00.000Z&intervalEnd=2023-10-01T00:00:00.000Z&type=COMPACT"
+      "https://api.transferwise.com/v1/profiles/13675836/balance-statements/11835403/statement.json?currency=EUR&intervalStart=2023-01-01T00:00:00.000Z&intervalEnd=2024-01-01T00:00:00.000Z&type=COMPACT"
 
     # TODO: move this config/runtime.ex
     token = System.get_env("TOKEN")

@@ -17,7 +17,11 @@ defmodule WiseReader.Transaction do
     "transactions_sample.json"
     |> File.read!()
     |> Jason.decode!()
-    |> IO.inspect(label: "hello")
+    |> process_transations()
+  end
+
+  def process_transations(body) do
+    body
     |> Map.get("transactions")
     |> Enum.map(&WiseReader.Transaction.from_json(&1))
     |> Enum.filter(&(&1.description != "Balance cashback"))
