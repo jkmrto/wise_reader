@@ -87,6 +87,8 @@ defmodule WiseReaderWeb do
       import WiseReaderWeb.CoreComponents
       import WiseReaderWeb.Gettext
 
+      use Phoenix.Component
+
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS
 

@@ -19,18 +19,15 @@ config :wise_reader, WiseReaderWeb.Endpoint,
     tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
   ]
 
-
 config :wise_reader,
   ecto_repos: [WiseReader.Repo]
 
-
 config :wise_reader, WiseReader.Repo,
-    database: "wise_db_dev",
-    username: "wise_user",
-    password: "pwd",
-    hostname: "localhost",
-    port: 6543
-
+  database: "wise_db_dev",
+  username: "wise_user",
+  password: "pwd",
+  hostname: "localhost",
+  port: 6543
 
 # ## SSL Support
 #

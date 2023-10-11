@@ -1,8 +1,10 @@
 defmodule WiseReaderWeb.BaseLive do
   use WiseReaderWeb, :live_view
 
+  alias WiseReader.Transactions
+
   def mount(_params, _session, socket) do
-    transactions = WiseReader.Transaction.dummy()
+    transactions = Transactions.get_transcations()
     {:ok, assign(socket, :transactions, transactions)}
   end
 
