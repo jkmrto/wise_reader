@@ -7,4 +7,11 @@ defmodule WiseReader.Transactions do
     query = from(t in Transaction, order_by: [desc: :date])
     WiseReader.Repo.all(query)
   end
+
+  def update_transaction_category(transaction_id, category) do
+    Transaction
+    |> WiseReader.Repo.get(transaction_id)
+    |> Transaction.changeset(%{"category" => category})
+    |> WiseReader.Repo.update()
+  end
 end

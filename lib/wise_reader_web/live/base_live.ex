@@ -2,6 +2,9 @@ defmodule WiseReaderWeb.BaseLive do
   use WiseReaderWeb, :live_view
 
   alias WiseReader.Transactions
+  alias WiseReader.Transactions.Transaction
+
+  @categories Transaction.categories()
 
   def mount(_params, _session, socket) do
     transactions = Transactions.get_transcations()
@@ -9,16 +12,22 @@ defmodule WiseReaderWeb.BaseLive do
   end
 
   def handle_event("refresh", _value, socket) do
-    IO.inspect("Refreshing event was there")
-
     {:ok, response} = WiseReader.WiseClient.call()
 
     transactions =
       response.body
       |> Jason.decode!()
-      |> WiseReader.Transaction.process_transations()
+      |> WiseReader.Transactions.Transaction.process_transations()
 
     {:noreply, assign(socket, :transactions, transactions)}
+  end
+
+  def handle_event("category-modified", payload, socket) do
+    IO.inspect(payload, label: "#### category-modified received with payload:")
+    %{"id" => id, "category" => category} = payload
+    Transactions.update_transaction_category(id, category)
+
+    {:noreply, socket}
   end
 
   defp bg_row(index) do
@@ -66,11 +75,11 @@ defmodule WiseReaderWeb.BaseLive do
                       <%= transaction.description %>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      <%= transaction.category %>
+                      <.category_selector transaction={transaction} />
                     </td>
 
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      <%= transaction.amount %>
+                      <%= if transaction.amount, do: Decimal.to_string(transaction.amount) %>
                     </td>
 
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -84,6 +93,18 @@ defmodule WiseReaderWeb.BaseLive do
         </div>
       </div>
     </div>
+    """
+  end
+
+  def category_selector(assigns) do
+    assigns = Map.put(assigns, :categories, ["none"] ++ @categories)
+
+    ~H"""
+    <select class="random" name="cars" id={@transaction.id} phx-hook="InfiniteScroll">
+      <%= for category <- @categories do %>
+        <option value={category}><%= String.capitalize(category) %></option>
+      <% end %>
+    </select>
     """
   end
 end

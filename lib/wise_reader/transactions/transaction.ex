@@ -1,6 +1,8 @@
 defmodule WiseReader.Transactions.Transaction do
   use Ecto.Schema
 
+  @categories ["groceries", "gym", "rent", "transport"]
+
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "transactions" do
     field(:reference, :string)
@@ -15,8 +17,15 @@ defmodule WiseReader.Transactions.Transaction do
     timestamps()
   end
 
+  def changeset(struct, params) do
+    struct
+    |> Ecto.Changeset.cast(params, [:category])
+  end
+
+  def categories, do: @categories
+
   def from_json(json) do
-    now = NaiveDateTime.truncate(NaiveDateTime.utc_now(), :second) 
+    now = NaiveDateTime.truncate(NaiveDateTime.utc_now(), :second)
 
     with {:ok, date, 0} <- DateTime.from_iso8601(json["date"]) do
       %{
