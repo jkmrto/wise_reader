@@ -100,11 +100,16 @@ defmodule WiseReaderWeb.BaseLive do
     assigns = Map.put(assigns, :categories, ["none"] ++ @categories)
 
     ~H"""
-    <select class="random" name="cars" id={@transaction.id} phx-hook="InfiniteScroll">
+    <select id={@transaction.id} phx-hook="InfiniteScroll">
       <%= for category <- @categories do %>
-        <option value={category}><%= String.capitalize(category) %></option>
+        <option selected={is_selected(@transaction.category, category)} value={category}>
+          <%= String.capitalize(category) %>
+        </option>
       <% end %>
     </select>
     """
   end
+
+  defp is_selected(same_category, same_category), do: true
+  defp is_selected(_tx_category, _option_category), do: false
 end
