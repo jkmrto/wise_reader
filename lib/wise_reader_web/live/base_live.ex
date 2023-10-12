@@ -8,22 +8,18 @@ defmodule WiseReaderWeb.BaseLive do
 
   def mount(_params, _session, socket) do
     transactions = Transactions.get_transcations()
+
     {:ok, assign(socket, :transactions, transactions)}
   end
 
   def handle_event("refresh", _value, socket) do
-    {:ok, response} = WiseReader.WiseClient.call()
-
-    transactions =
-      response.body
-      |> Jason.decode!()
-      |> WiseReader.Transactions.Transaction.process_transations()
+    Transactions.refresh_transactions()
+    transactions = Transactions.get_transcations()
 
     {:noreply, assign(socket, :transactions, transactions)}
   end
 
   def handle_event("category-modified", payload, socket) do
-    IO.inspect(payload, label: "#### category-modified received with payload:")
     %{"id" => id, "category" => category} = payload
     Transactions.update_transaction_category(id, category)
 

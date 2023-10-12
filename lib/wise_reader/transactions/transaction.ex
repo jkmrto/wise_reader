@@ -1,7 +1,7 @@
 defmodule WiseReader.Transactions.Transaction do
   use Ecto.Schema
 
-  @categories ["groceries", "gym", "rent", "transport"]
+  @categories ["groceries", "gym", "rent", "transport", "coworking", "leisure"]
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "transactions" do
@@ -30,16 +30,18 @@ defmodule WiseReader.Transactions.Transaction do
     with {:ok, date, 0} <- DateTime.from_iso8601(json["date"]) do
       %{
         date: DateTime.truncate(date, :second),
-        amount: json["details"]["amount"]["value"],
+        amount: maybe_cast_float_to_decimal(json["details"]["amount"]["value"]),
         reference: json["referenceNumber"],
         description: json["details"]["description"],
-        category: json["details"]["category"],
         wise: true,
         updated_at: now,
         inserted_at: now
       }
     end
   end
+
+  defp maybe_cast_float_to_decimal(nil), do: nil
+  defp maybe_cast_float_to_decimal(float), do: Decimal.from_float(float)
 
   def dummy() do
     "transactions_sample.json"
@@ -53,5 +55,6 @@ defmodule WiseReader.Transactions.Transaction do
     |> Map.get("transactions")
     |> Enum.map(&from_json(&1))
     |> Enum.filter(&(&1.description != "Balance cashback"))
+    |> Enum.filter(&(not is_nil(&1.amount)))
   end
 end
