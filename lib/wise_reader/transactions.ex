@@ -1,7 +1,7 @@
 defmodule WiseReader.Transactions do
-  alias WiseReader.Transactions.Transaction
-
   import Ecto.Query
+
+  alias WiseReader.Transactions.Transaction
 
   def get_transcations() do
     query = from(t in Transaction, order_by: [desc: :date])
@@ -32,5 +32,15 @@ defmodule WiseReader.Transactions do
     new_txs = Enum.filter(tx_wise, fn tx -> tx.reference in new_references end)
 
     WiseReader.Repo.insert_all(Transaction, new_txs)
+  end
+
+  def calculate_amount_per_category(transactions) do
+    transactions
+    |> Enum.group_by(& &1.category)
+    |> Enum.map(fn {key, elements} ->
+      {key, Enum.map(elements, & &1.amount) |> Enum.reduce(&Decimal.add(&1, &2))}
+    end)
+    |> Enum.map(fn {category, decimal_sum} -> [category, Decimal.to_float(decimal_sum)] end)
+    |> Enum.filter(fn [category, _amount] -> category not in [nil, ""] end)
   end
 end

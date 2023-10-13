@@ -48,7 +48,8 @@ defmodule WiseReader.MixProject do
       {:httpoison, "~> 2.0"},
       {:ex_crypto, "~> 0.10.0"},
       {:ecto_sql, "~> 3.0"},
-      {:postgrex, ">= 0.0.0"}
+      {:postgrex, ">= 0.0.0"},
+      {:contex, "~> 0.5"}
     ]
   end
 

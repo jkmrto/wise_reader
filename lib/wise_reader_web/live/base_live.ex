@@ -9,7 +9,28 @@ defmodule WiseReaderWeb.BaseLive do
   def mount(_params, _session, socket) do
     transactions = Transactions.get_transcations()
 
-    {:ok, assign(socket, :transactions, transactions)}
+    stats = Transactions.calculate_amount_per_category(transactions)
+    svg = build_pie_chart_svg(stats)
+
+    socket = assign(socket, :transactions, transactions)
+    socket = assign(socket, :svg, Phoenix.HTML.safe_to_string(svg))
+
+    {:ok, socket}
+  end
+
+  defp build_pie_chart_svg(stats) do
+    dataset = Contex.Dataset.new(stats, ["Channel", "Count"])
+
+    opts = [
+      mapping: %{category_col: "Channel", value_col: "Count"},
+      # colour_palette: ["16a34a", "c13584", "499be4", "FF0000", "00f2ea"],
+      legend_setting: :legend_right,
+      data_labels: false
+    ]
+
+    dataset
+    |> Contex.Plot.new(Contex.PieChart, 550, 400, opts)
+    |> Contex.Plot.to_svg()
   end
 
   def handle_event("refresh", _value, socket) do
@@ -89,6 +110,8 @@ defmodule WiseReaderWeb.BaseLive do
         </div>
       </div>
     </div>
+
+    <%= raw(@svg) %>
     """
   end
 
