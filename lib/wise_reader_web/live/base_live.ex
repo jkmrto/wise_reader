@@ -14,23 +14,12 @@ defmodule WiseReaderWeb.BaseLive do
 
     socket = assign(socket, :transactions, transactions)
     socket = assign(socket, :svg, Phoenix.HTML.safe_to_string(svg))
+    socket = assign(socket, :show, :expenses)
+    socket = assign(socket, :stats, stats)
+
+    IO.inspect(stats)
 
     {:ok, socket}
-  end
-
-  defp build_pie_chart_svg(stats) do
-    dataset = Contex.Dataset.new(stats, ["Channel", "Count"])
-
-    opts = [
-      mapping: %{category_col: "Channel", value_col: "Count"},
-      # colour_palette: ["16a34a", "c13584", "499be4", "FF0000", "00f2ea"],
-      legend_setting: :legend_right,
-      data_labels: false
-    ]
-
-    dataset
-    |> Contex.Plot.new(Contex.PieChart, 550, 400, opts)
-    |> Contex.Plot.to_svg()
   end
 
   def handle_event("refresh", _value, socket) do
@@ -47,71 +36,124 @@ defmodule WiseReaderWeb.BaseLive do
     {:noreply, socket}
   end
 
+  def handle_event("show-expenses", _value, socket) do
+    socket = assign(socket, :show, :expenses)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("show-stats", _value, socket) do
+    socket = assign(socket, :show, :stats)
+
+    {:noreply, socket}
+  end
+
   defp bg_row(index) do
     if rem(index, 2) == 0, do: "bg-gray-100", else: "bg-white"
   end
 
   def render(assigns) do
     ~H"""
-    <button
-      phx-click="refresh"
-      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-    >
-      Refresh
-    </button>
+    <div class="flex flex-row space-x-4 mx-10">
+      <button
+        phx-click="refresh"
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      >
+        Refresh
+      </button>
 
-    <div class="flex flex-col">
-      <div class="sm:mx-0.5 lg:mx-0.5">
-        <div class="py-2 inline-block  sm:px-6">
-          <div class="overflow-hidden">
-            <table class="min-w-full">
-              <thead class="bg-white border-b">
-                <tr>
-                  <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                    Description
-                  </th>
+      <button
+        phx-click="show-expenses"
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      >
+        Expenses
+      </button>
 
-                  <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                    Category
-                  </th>
+      <button
+        phx-click="show-stats"
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      >
+        Stats
+      </button>
+    </div>
 
-                  <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                    Amount (€)
-                  </th>
+    <%= if @show == :expenses  do %>
+      <div class="flex flex-col">
+        <div class="sm:mx-0.5 lg:mx-0.5">
+          <div class="py-2 inline-block  sm:px-6">
+            <div class="overflow-hidden">
+              <table class="min-w-full">
+                <thead class="bg-white border-b">
+                  <tr>
+                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                      Description
+                    </th>
 
-                  <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                    Date
-                  </th>
-                </tr>
-              </thead>
+                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                      Category
+                    </th>
 
-              <tbody>
-                <%= for {transaction, index} <- Enum.with_index(@transactions)  do %>
-                  <tr class={bg_row(index) <> " border-b"}>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      <%= transaction.description %>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      <.category_selector transaction={transaction} />
-                    </td>
+                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                      Amount (€)
+                    </th>
 
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      <%= if transaction.amount, do: Decimal.to_string(transaction.amount) %>
-                    </td>
-
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      <%= transaction.date %>
-                    </td>
+                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                      Date
+                    </th>
                   </tr>
-                <% end %>
-              </tbody>
-            </table>
+                </thead>
+
+                <tbody>
+                  <%= for {transaction, index} <- Enum.with_index(@transactions)  do %>
+                    <tr class={bg_row(index) <> " border-b"}>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <%= transaction.description %>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <.category_selector transaction={transaction} />
+                      </td>
+
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <%= if transaction.amount, do: Decimal.to_string(transaction.amount) %>
+                      </td>
+
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <%= transaction.date %>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    <% end %>
 
-    <%= raw(@svg) %>
+    <%= if @show == :stats  do %>
+      <div class="flex flex-row justify-between my-20">
+        <div class="contents mx-15">
+          <%= raw(@svg) %>
+        </div>
+        <div class="mx-10">
+          <table class="min-w-full">
+            <tbody>
+              <%= for {[category, amount], index} <- Enum.with_index(@stats)  do %>
+                <tr class={bg_row(index) <> " border-b"}>
+                  <td class="px-6 py-2 whitespace-nowrap text-sm font-small text-gray-900">
+                    <%= category %>
+                  </td>
+
+                  <td class="px-6 py-2 whitespace-nowrap text-sm font-small text-gray-900">
+                    <%= amount %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% end %>
     """
   end
 
@@ -131,4 +173,19 @@ defmodule WiseReaderWeb.BaseLive do
 
   defp is_selected(same_category, same_category), do: true
   defp is_selected(_tx_category, _option_category), do: false
+
+  defp build_pie_chart_svg(stats) do
+    dataset = Contex.Dataset.new(stats, ["Channel", "Count"])
+
+    opts = [
+      mapping: %{category_col: "Channel", value_col: "Count"},
+      # colour_palette: ["16a34a", "c13584", "499be4", "FF0000", "00f2ea"],
+      legend_setting: :legend_right,
+      data_labels: true
+    ]
+
+    dataset
+    |> Contex.Plot.new(Contex.PieChart, 600, 400, opts)
+    |> Contex.Plot.to_svg()
+  end
 end
