@@ -8,6 +8,12 @@ defmodule WiseReader.Transactions do
     WiseReader.Repo.all(query)
   end
 
+  def get_transactions_grouped_by_date() do
+    # TODO: Probably this could be optimized at DB level someway
+    transactions = get_transcations()
+    Enum.group_by(transactions, &DateTime.to_date(&1.date).month)
+  end
+
   def update_transaction_category(transaction_id, category) do
     Transaction
     |> WiseReader.Repo.get(transaction_id)
