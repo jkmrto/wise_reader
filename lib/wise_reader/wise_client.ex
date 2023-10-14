@@ -9,7 +9,6 @@ defmodule WiseReader.WiseClient do
     headers = [{"Authorization", "Bearer #{token}"}]
 
     resp = HTTPoison.get(url, headers)
-    IO.inspect(resp)
 
     case resp do
       {:ok, resp = %HTTPoison.Response{status_code: 403}} ->
@@ -23,8 +22,7 @@ defmodule WiseReader.WiseClient do
           {"X-Signature", signature}
         ]
 
-        signed_response = HTTPoison.get(url, headers)
-        IO.inspect(signed_response, label: "signed_response")
+        HTTPoison.get(url, headers)
     end
   end
 

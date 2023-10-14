@@ -17,8 +17,6 @@ defmodule WiseReaderWeb.BaseLive do
     socket = assign(socket, :show, :expenses)
     socket = assign(socket, :stats, stats)
 
-    IO.inspect(stats)
-
     {:ok, socket}
   end
 
@@ -136,24 +134,46 @@ defmodule WiseReaderWeb.BaseLive do
           <%= raw(@svg) %>
         </div>
         <div class="mx-10">
-          <table class="min-w-full">
-            <tbody>
-              <%= for {[category, amount], index} <- Enum.with_index(@stats)  do %>
-                <tr class={bg_row(index) <> " border-b"}>
-                  <td class="px-6 py-2 whitespace-nowrap text-sm font-small text-gray-900">
-                    <%= category %>
-                  </td>
-
-                  <td class="px-6 py-2 whitespace-nowrap text-sm font-small text-gray-900">
-                    <%= amount %>
-                  </td>
-                </tr>
-              <% end %>
-            </tbody>
-          </table>
+          <.expenses_per_category_table stats={@stats} />
         </div>
       </div>
     <% end %>
+    """
+  end
+
+  defp expenses_per_category_table(assigns) do
+    total =
+      assigns.stats
+      |> Enum.reduce(0, fn [_category, amount], acc -> acc + amount end)
+      |> Float.round(2)
+
+    assigns = Map.put(assigns, :total, total)
+
+    ~H"""
+    <table class="min-w-full">
+      <tbody>
+        <%= for {[category, amount], index} <- Enum.with_index(@stats)  do %>
+          <tr class={bg_row(index) <> " border-b"}>
+            <td class="px-6 py-2 whitespace-nowrap text-sm font-small text-gray-900">
+              <%= category %>
+            </td>
+
+            <td class="px-6 py-2 whitespace-nowrap text-sm font-small text-gray-900">
+              <%= amount %>
+            </td>
+          </tr>
+        <% end %>
+        <tr class="bg-blue-200 border-b">
+          <td class="px-6 py-2 whitespace-nowrap text-sm font-small text-gray-900">
+            Total
+          </td>
+
+          <td class="px-6 py-2 whitespace-nowrap text-sm font-small text-gray-900">
+            <%= @total %>
+          </td>
+        </tr>
+      </tbody>
+    </table>
     """
   end
 
@@ -185,7 +205,7 @@ defmodule WiseReaderWeb.BaseLive do
     ]
 
     dataset
-    |> Contex.Plot.new(Contex.PieChart, 600, 400, opts)
+    |> Contex.Plot.new(Contex.PieChart, 600, 500, opts)
     |> Contex.Plot.to_svg()
   end
 end
