@@ -1,6 +1,15 @@
 defmodule WiseReader.Transactions.Transaction do
   use Ecto.Schema
 
+  @unprocessable_transaction_types [
+    "CONVERSION",
+    "DEPOSIT",
+    "MONEY_ADDED",
+    "TRANSFER",
+    "UNKNOWN",
+    "BALANCE CASHBACK"
+  ]
+
   @categories ["groceries", "gym", "rent", "transport", "coworking", "leisure"]
 
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -53,8 +62,8 @@ defmodule WiseReader.Transactions.Transaction do
   def process_transations(body) do
     body
     |> Map.get("transactions")
+    |> Enum.filter(&(&1["details"]["type"] not in @unprocessable_transaction_types))
     |> Enum.map(&from_json(&1))
-    |> Enum.filter(&(&1.description != "Balance cashback"))
     |> Enum.filter(&(not is_nil(&1.amount)))
   end
 end
