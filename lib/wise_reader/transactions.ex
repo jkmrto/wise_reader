@@ -46,10 +46,10 @@ defmodule WiseReader.Transactions do
     |> Enum.map(fn {key, elements} ->
       {key, Enum.map(elements, & &1.amount) |> Enum.reduce(&Decimal.add(&1, &2))}
     end)
+    |> Enum.filter(fn {category, _amount} -> category not in [nil, ""] end)
     |> Enum.map(fn {category, decimal_sum} ->
       [String.capitalize(category), Decimal.to_float(decimal_sum)]
     end)
-    |> Enum.filter(fn [category, _amount] -> category not in [nil, ""] end)
     |> Enum.sort_by(fn [_category, amount] -> amount end, :desc)
   end
 end
