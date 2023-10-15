@@ -52,7 +52,6 @@ defmodule WiseReaderWeb.BaseLive do
 
     socket = assign(socket, :svg, Phoenix.HTML.safe_to_string(svg))
     socket = assign(socket, :stats, stats)
-    socket = assign(socket, :transactions, transactions_per_month[month])
     socket = assign(socket, :transactions, Map.get(transactions_per_month, month, []))
 
     {:noreply, socket}
@@ -66,30 +65,6 @@ defmodule WiseReaderWeb.BaseLive do
 
   defp bg_row(index) do
     if rem(index, 2) == 0, do: "bg-gray-100", else: "bg-white"
-  end
-
-  def month_tab_classes() do
-    "mx-5 block border-x-0 border-b-2 border-t-0 border-transparent px-7 pb-3.5 pt-4 text-xs font-medium uppercase leading-tight text-neutral-900 hover:isolate hover:border-transparent bg-sky-100 hover:bg-neutral-100 focus:isolate focus:border-transparent data-[te-nav-active]:border-primary data-[te-nav-active]:text-primary dark:text-neutral-900 dark:hover:bg-transparent dark:data-[te-nav-active]:border-primary-400 dark:data-[te-nav-active]:text-primary-400 cursor-pointer text-center"
-  end
-
-  def month_tabs_selector(assigns) do
-    ~H"""
-    <ul class="flex list-none flex-row flex-wrap border-b-0 pl-0 ps-20" role="tablist" data-te-nav-ref>
-      <li class="flex-2">
-        <a phx-click="change-month" phx-value-month={9} class={month_tab_classes()}>
-          September
-        </a>
-      </li>
-      <li class="flex-1 flex justify-center">
-        <a phx-click="change-month" phx-value-month={10} class={"w-full " <> month_tab_classes()}>
-          October
-        </a>
-      </li>
-      <li class="flex-2">
-        <a phx-click="change-month" phx-value-month={11} class={month_tab_classes()}> November </a>
-      </li>
-    </ul>
-    """
   end
 
   def render(assigns) do
@@ -127,41 +102,20 @@ defmodule WiseReaderWeb.BaseLive do
           <table class="min-w-full">
             <thead class="bg-white border-b">
               <tr>
-                <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                  Description
-                </th>
-
-                <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                  Category
-                </th>
-
-                <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                  Amount (€)
-                </th>
-
-                <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
-                  Date
-                </th>
+                <.table_cell_header content="Description" />
+                <.table_cell_header content="Category" />
+                <.table_cell_header content="Amount (€)" />
+                <.table_cell_header content="Date" />
               </tr>
             </thead>
 
             <tbody>
               <%= for {transaction, index} <- Enum.with_index(@transactions)  do %>
                 <tr class={bg_row(index) <> " border-b"}>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    <%= transaction.description %>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    <.category_selector transaction={transaction} />
-                  </td>
-
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    <%= if transaction.amount, do: Decimal.to_string(transaction.amount) %>
-                  </td>
-
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    <%= transaction.date %>
-                  </td>
+                  <.table_cell_body content={transaction.description} />
+                  <.table_cell_body content={category_selector(%{transaction: transaction})} />
+                  <.table_cell_body content={Decimal.to_string(transaction.amount)} />
+                  <.table_cell_body content={transaction.date} />
                 </tr>
               <% end %>
             </tbody>
@@ -180,6 +134,22 @@ defmodule WiseReaderWeb.BaseLive do
         </div>
       </div>
     <% end %>
+    """
+  end
+
+  defp table_cell_header(assigns) do
+    ~H"""
+    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+      <%= @content %>
+    </th>
+    """
+  end
+
+  defp table_cell_body(assigns) do
+    ~H"""
+    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+      <%= @content %>
+    </td>
     """
   end
 
@@ -230,6 +200,30 @@ defmodule WiseReaderWeb.BaseLive do
         </option>
       <% end %>
     </select>
+    """
+  end
+
+  defp month_tab_classes() do
+    "mx-5 block border-x-0 border-b-2 border-t-0 border-transparent px-7 pb-3.5 pt-4 text-xs font-medium uppercase leading-tight text-neutral-900 hover:isolate hover:border-transparent bg-sky-100 hover:bg-neutral-100 focus:isolate focus:border-transparent data-[te-nav-active]:border-primary data-[te-nav-active]:text-primary dark:text-neutral-900 dark:hover:bg-transparent dark:data-[te-nav-active]:border-primary-400 dark:data-[te-nav-active]:text-primary-400 cursor-pointer text-center"
+  end
+
+  def month_tabs_selector(assigns) do
+    ~H"""
+    <ul class="flex list-none flex-row flex-wrap border-b-0 pl-0 ps-20" role="tablist" data-te-nav-ref>
+      <li class="flex-2">
+        <a phx-click="change-month" phx-value-month={9} class={month_tab_classes()}>
+          September
+        </a>
+      </li>
+      <li class="flex-1 flex justify-center">
+        <a phx-click="change-month" phx-value-month={10} class={"w-full " <> month_tab_classes()}>
+          October
+        </a>
+      </li>
+      <li class="flex-2">
+        <a phx-click="change-month" phx-value-month={11} class={month_tab_classes()}> November </a>
+      </li>
+    </ul>
     """
   end
 
