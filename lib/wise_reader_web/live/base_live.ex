@@ -8,15 +8,12 @@ defmodule WiseReaderWeb.BaseLive do
   @default_month 10
 
   def mount(_params, _session, socket) do
-    transactions = Transactions.get_transcations()
-
     transactions_per_month = Transactions.get_transactions_grouped_by_date()
 
-    stats = Transactions.calculate_amount_per_category(transactions)
+    stats = Transactions.calculate_amount_per_category(transactions_per_month[@default_month])
     svg = build_pie_chart_svg(stats)
 
     socket = assign(socket, :transactions, transactions_per_month[@default_month])
-    #    socket = assign(socket, :transactions, transactions)
     socket = assign(socket, :svg, Phoenix.HTML.safe_to_string(svg))
     socket = assign(socket, :show, :expenses)
     socket = assign(socket, :stats, stats)
@@ -49,6 +46,13 @@ defmodule WiseReaderWeb.BaseLive do
     month = String.to_integer(month_str)
 
     transactions_per_month = Transactions.get_transactions_grouped_by_date()
+
+    stats = Transactions.calculate_amount_per_category(transactions_per_month[month])
+    svg = build_pie_chart_svg(stats)
+
+    socket = assign(socket, :svg, Phoenix.HTML.safe_to_string(svg))
+    socket = assign(socket, :stats, stats)
+    socket = assign(socket, :transactions, transactions_per_month[month])
     socket = assign(socket, :transactions, Map.get(transactions_per_month, month, []))
 
     {:noreply, socket}
