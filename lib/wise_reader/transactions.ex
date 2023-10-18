@@ -68,6 +68,7 @@ defmodule WiseReader.Transactions do
     |> Enum.map(&Transaction.from_json(&1))
     |> Enum.filter(&(not is_nil(&1.amount)))
     |> remove_reimbursed_transactions()
+    |> Enum.map(fn transaction -> %{transaction | amount: Decimal.abs(transaction.amount)} end)
   end
 
   defp remove_reimbursed_transactions(transactions) do
