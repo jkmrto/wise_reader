@@ -31,6 +31,7 @@ defmodule WiseReader.Importers.Bankinter do
       reference: reference,
       amount: String.replace(amount, ",", ".") |> Decimal.new() |> Decimal.abs(),
       description: description,
+      imported_from: :bankinter,
       date: datetime
     }
   end
