@@ -35,7 +35,7 @@ defmodule WiseReader.Transactions.Transaction do
         amount: maybe_cast_float_to_decimal(json["amount"]["value"]),
         reference: json["referenceNumber"],
         description: json["details"]["description"],
-        wise: true,
+        imported_from: :wise,
         updated_at: now,
         inserted_at: now
       }
