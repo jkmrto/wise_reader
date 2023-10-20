@@ -150,7 +150,8 @@ defmodule WiseReaderWeb.BaseLive do
                 <.table_cell_header content="Description" />
                 <.table_cell_header content="Category" />
                 <.table_cell_header content="Amount (€)" />
-                <.table_cell_header content="Date" />
+                <.table_cell_header content="Day" />
+                <.table_cell_header content="Origin" />
               </tr>
             </thead>
 
@@ -160,7 +161,8 @@ defmodule WiseReaderWeb.BaseLive do
                   <.table_cell_body content={transaction.description} />
                   <.table_cell_body content={category_selector(%{transaction: transaction})} />
                   <.table_cell_body content={Decimal.to_string(transaction.amount)} />
-                  <.table_cell_body content={transaction.date} />
+                  <.table_cell_body content={transaction.date.day} />
+                  <.table_cell_body content={capitalized_imported_from(transaction)} />
                 </tr>
               <% end %>
             </tbody>
@@ -289,4 +291,9 @@ defmodule WiseReaderWeb.BaseLive do
     |> Contex.Plot.new(Contex.PieChart, 600, 500, opts)
     |> Contex.Plot.to_svg()
   end
+
+  def capitalized_imported_from(%{imported_from: nil}), do: ""
+
+  def capitalized_imported_from(%{imported_from: imported_from}),
+    do: String.capitalize("#{imported_from}")
 end
