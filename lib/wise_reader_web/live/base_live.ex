@@ -3,6 +3,7 @@ defmodule WiseReaderWeb.BaseLive do
 
   alias WiseReader.Transactions
   alias WiseReader.Transactions.Transaction
+  alias WiseReader.Transactions.Wise
 
   @categories Transaction.categories()
   @default_month 10
@@ -25,8 +26,9 @@ defmodule WiseReaderWeb.BaseLive do
     {:ok, socket}
   end
 
+
   def handle_event("refresh", _value, socket) do
-    Transactions.refresh_transactions()
+    Wise.import_transactions()
     transactions = Transactions.get_transcations()
 
     {:noreply, assign(socket, :transactions, transactions)}
