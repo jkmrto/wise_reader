@@ -1,6 +1,7 @@
 defmodule WiseReaderWeb.BaseLive do
   use WiseReaderWeb, :live_view
 
+  alias WiseReader.Importers.Bankinter
   alias WiseReader.Transactions
   alias WiseReader.Transactions.Transaction
   alias WiseReader.Transactions.Wise
@@ -25,26 +26,31 @@ defmodule WiseReaderWeb.BaseLive do
   @month_to_index @months |> Enum.with_index() |> Enum.into(%{})
 
   def mount(_params, _session, socket) do
-    transactions_per_month = Transactions.get_transactions_grouped_by_date()
-
-    stats =
-      Transactions.calculate_amount_per_category(
-        Map.get(transactions_per_month, @default_month, [])
-      )
-
-    svg = build_pie_chart_svg(stats)
-
-    socket = assign(socket, :transactions, Map.get(transactions_per_month, @default_month, []))
-    socket = assign(socket, :svg, Phoenix.HTML.safe_to_string(svg))
     socket = assign(socket, :tab, :expenses)
-    socket = assign(socket, :month, "october")
-    socket = assign(socket, :stats, stats)
     socket = assign(socket, :show_modal, false)
 
     socket = assign(socket, :uploaded_files, [])
     socket = allow_upload(socket, :import_bankinter, accept: ~w(.csv), max_entries: 1)
 
     {:ok, socket}
+  end
+
+  def handle_params(params, _uri, socket) do
+    %{"month" => month_str, "tab" => _tab} = params
+
+    index_month = @month_to_index[month_str]
+    transactions_per_month = Transactions.get_transactions_grouped_by_date()
+    month_transactions = Map.get(transactions_per_month, index_month, [])
+
+    stats = Transactions.calculate_amount_per_category(month_transactions)
+    svg = build_pie_chart_svg(stats)
+
+    socket = assign(socket, :svg, Phoenix.HTML.safe_to_string(svg))
+    socket = assign(socket, :stats, stats)
+    socket = assign(socket, :transactions, month_transactions)
+    socket = assign(socket, :month, month_str)
+
+    {:noreply, socket}
   end
 
   def handle_event("refresh", _value, socket) do
@@ -57,8 +63,6 @@ defmodule WiseReaderWeb.BaseLive do
   def handle_event("validate-import-bankinter", _value, socket) do
     {:noreply, socket}
   end
-
-  alias WiseReader.Importers.Bankinter
 
   def handle_event("import-bankinter", _value, socket) do
     filename =
@@ -75,8 +79,6 @@ defmodule WiseReaderWeb.BaseLive do
 
     {:noreply, socket}
   end
-
-  # {completed_movements, pending_movements} = Enum.split(chao, index) 
 
   def handle_event("category-modified", payload, socket) do
     %{"id" => id, "category" => category} = payload
@@ -101,24 +103,6 @@ defmodule WiseReaderWeb.BaseLive do
     socket = assign(socket, :show, :stats)
 
     {:noreply, push_patch(socket, to: ~p"/base/#{socket.assigns.month}/stats")}
-  end
-
-  def handle_params(params, _uri, socket) do
-    %{"month" => month_str, "tab" => _tab} = params
-
-    index_month = @month_to_index[month_str]
-    transactions_per_month = Transactions.get_transactions_grouped_by_date()
-    month_transactions = Map.get(transactions_per_month, index_month, [])
-
-    stats = Transactions.calculate_amount_per_category(month_transactions)
-    svg = build_pie_chart_svg(stats)
-
-    socket = assign(socket, :svg, Phoenix.HTML.safe_to_string(svg))
-    socket = assign(socket, :stats, stats)
-    socket = assign(socket, :transactions, month_transactions)
-    socket = assign(socket, :month, month_str)
-
-    {:noreply, socket}
   end
 
   defp bg_row(index) do
