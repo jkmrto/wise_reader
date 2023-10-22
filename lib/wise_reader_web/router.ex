@@ -20,6 +20,7 @@ defmodule WiseReaderWeb.Router do
     get "/", PageController, :home
 
     live "/base", BaseLive
+    live "/base/:month/:tab", BaseLive
   end
 
   # Other scopes may use custom stacks.

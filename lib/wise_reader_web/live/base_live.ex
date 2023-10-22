@@ -8,15 +8,36 @@ defmodule WiseReaderWeb.BaseLive do
   @categories Transaction.categories()
   @default_month 10
 
+  @months [
+    "january",
+    "feburary",
+    "march",
+    "april",
+    "may",
+    "june",
+    "july",
+    "august",
+    "september",
+    "october",
+    "november",
+    "december"
+  ]
+  @month_to_index @months |> Enum.with_index() |> Enum.into(%{})
+
   def mount(_params, _session, socket) do
     transactions_per_month = Transactions.get_transactions_grouped_by_date()
 
-    stats = Transactions.calculate_amount_per_category(transactions_per_month[@default_month])
+    stats =
+      Transactions.calculate_amount_per_category(
+        Map.get(transactions_per_month, @default_month, [])
+      )
+
     svg = build_pie_chart_svg(stats)
 
-    socket = assign(socket, :transactions, transactions_per_month[@default_month])
+    socket = assign(socket, :transactions, Map.get(transactions_per_month, @default_month, []))
     socket = assign(socket, :svg, Phoenix.HTML.safe_to_string(svg))
-    socket = assign(socket, :show, :expenses)
+    socket = assign(socket, :tab, :expenses)
+    socket = assign(socket, :month, "october")
     socket = assign(socket, :stats, stats)
     socket = assign(socket, :show_modal, false)
 
@@ -25,7 +46,6 @@ defmodule WiseReaderWeb.BaseLive do
 
     {:ok, socket}
   end
-
 
   def handle_event("refresh", _value, socket) do
     Wise.import_transactions()
@@ -65,30 +85,38 @@ defmodule WiseReaderWeb.BaseLive do
     {:noreply, socket}
   end
 
+  def handle_event("change-month", values, socket) do
+    %{"month" => month_str} = values
+
+    {:noreply, push_patch(socket, to: ~p"/base/#{month_str}/stats")}
+  end
+
   def handle_event("show-expenses", _value, socket) do
     socket = assign(socket, :show, :expenses)
 
-    {:noreply, socket}
-  end
-
-  def handle_event("change-month", values, socket) do
-    %{"month" => month_str} = values
-    month = String.to_integer(month_str)
-
-    transactions_per_month = Transactions.get_transactions_grouped_by_date()
-
-    stats = Transactions.calculate_amount_per_category(transactions_per_month[month])
-    svg = build_pie_chart_svg(stats)
-
-    socket = assign(socket, :svg, Phoenix.HTML.safe_to_string(svg))
-    socket = assign(socket, :stats, stats)
-    socket = assign(socket, :transactions, Map.get(transactions_per_month, month, []))
-
-    {:noreply, socket}
+    {:noreply, push_patch(socket, to: ~p"/base/#{socket.assigns.month}/expenses")}
   end
 
   def handle_event("show-stats", _value, socket) do
     socket = assign(socket, :show, :stats)
+
+    {:noreply, push_patch(socket, to: ~p"/base/#{socket.assigns.month}/stats")}
+  end
+
+  def handle_params(params, _uri, socket) do
+    %{"month" => month_str, "tab" => _tab} = params
+
+    index_month = @month_to_index[month_str]
+    transactions_per_month = Transactions.get_transactions_grouped_by_date()
+    month_transactions = Map.get(transactions_per_month, index_month, [])
+
+    stats = Transactions.calculate_amount_per_category(month_transactions)
+    svg = build_pie_chart_svg(stats)
+
+    socket = assign(socket, :svg, Phoenix.HTML.safe_to_string(svg))
+    socket = assign(socket, :stats, stats)
+    socket = assign(socket, :transactions, month_transactions)
+    socket = assign(socket, :month, month_str)
 
     {:noreply, socket}
   end
@@ -143,7 +171,7 @@ defmodule WiseReaderWeb.BaseLive do
       <.month_tabs_selector />
     </div>
 
-    <%= if @show == :expenses  do %>
+    <%= if @tab == :expenses  do %>
       <div class="inline-block  sm:px-6">
         <div class="overflow-hidden">
           <table class="min-w-full">
@@ -173,7 +201,7 @@ defmodule WiseReaderWeb.BaseLive do
       </div>
     <% end %>
 
-    <%= if @show == :stats  do %>
+    <%= if @tab == :stats  do %>
       <div class="flex flex-row justify-between my-20">
         <div class="contents mx-15">
           <%= raw(@svg) %>
@@ -205,7 +233,7 @@ defmodule WiseReaderWeb.BaseLive do
   defp expenses_per_category_table(assigns) do
     total =
       assigns.stats
-      |> Enum.reduce(0, fn [_category, amount], acc -> acc + amount end)
+      |> Enum.reduce(0.0, fn [_category, amount], acc -> acc + amount end)
       |> Float.round(2)
 
     assigns = Map.put(assigns, :total, total)
@@ -252,6 +280,8 @@ defmodule WiseReaderWeb.BaseLive do
     """
   end
 
+  ["september", "october", "november"]
+
   defp month_tab_classes() do
     "mx-5 block border-x-0 border-b-2 border-t-0 border-transparent px-7 pb-3.5 pt-4 text-xs font-medium uppercase leading-tight text-neutral-900 hover:isolate hover:border-transparent bg-sky-100 hover:bg-neutral-100 focus:isolate focus:border-transparent data-[te-nav-active]:border-primary data-[te-nav-active]:text-primary dark:text-neutral-900 dark:hover:bg-transparent dark:data-[te-nav-active]:border-primary-400 dark:data-[te-nav-active]:text-primary-400 cursor-pointer text-center"
   end
@@ -260,17 +290,19 @@ defmodule WiseReaderWeb.BaseLive do
     ~H"""
     <ul class="flex list-none flex-row flex-wrap border-b-0 pl-0 ps-20" role="tablist" data-te-nav-ref>
       <li class="flex-2">
-        <a phx-click="change-month" phx-value-month={9} class={month_tab_classes()}>
+        <a phx-click="change-month" phx-value-month="september" class={month_tab_classes()}>
           September
         </a>
       </li>
       <li class="flex-1 flex justify-center">
-        <a phx-click="change-month" phx-value-month={10} class={"w-full " <> month_tab_classes()}>
+        <a phx-click="change-month" phx-value-month="october" class={"w-full " <> month_tab_classes()}>
           October
         </a>
       </li>
       <li class="flex-2">
-        <a phx-click="change-month" phx-value-month={11} class={month_tab_classes()}> November </a>
+        <a phx-click="change-month" phx-value-month="november" class={month_tab_classes()}>
+          November
+        </a>
       </li>
     </ul>
     """

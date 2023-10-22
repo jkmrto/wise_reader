@@ -21,6 +21,9 @@ defmodule WiseReader.Transactions do
     |> WiseReader.Repo.update()
   end
 
+  def calculate_amount_per_category([]), do: []
+  def calculate_amount_per_category(nil), do: []
+
   def calculate_amount_per_category(transactions) do
     transactions
     |> Enum.group_by(& &1.category)
@@ -33,5 +36,4 @@ defmodule WiseReader.Transactions do
     end)
     |> Enum.sort_by(fn [_category, amount] -> amount end, :desc)
   end
-
 end

@@ -1,5 +1,4 @@
 defmodule WiseReader.Transactions.Wise do
-  
   alias WiseReader.Importers.WiseClient
   alias WiseReader.Transactions.Transaction
   alias WiseReader.Transactions
