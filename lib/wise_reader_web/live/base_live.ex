@@ -23,7 +23,9 @@ defmodule WiseReaderWeb.BaseLive do
     "november",
     "december"
   ]
-  @month_to_index @months |> Enum.with_index() |> Enum.into(%{})
+  @month_to_index @months
+                  |> Enum.with_index()
+                  |> Enum.into(%{}, fn {month_str, index} -> {month_str, index + 1} end)
 
   def mount(_params, _session, socket) do
     socket = assign(socket, :tab, :expenses)
@@ -36,10 +38,12 @@ defmodule WiseReaderWeb.BaseLive do
   end
 
   def handle_params(params, _uri, socket) do
-    %{"month" => month_str, "tab" => _tab} = params
+    %{"month" => month_str, "tab" => tab} = params
+    {:ok, tab} = parse_tab(tab)
 
     index_month = @month_to_index[month_str]
     transactions_per_month = Transactions.get_transactions_grouped_by_date()
+
     month_transactions = Map.get(transactions_per_month, index_month, [])
 
     stats = Transactions.calculate_amount_per_category(month_transactions)
@@ -49,6 +53,7 @@ defmodule WiseReaderWeb.BaseLive do
     socket = assign(socket, :stats, stats)
     socket = assign(socket, :transactions, month_transactions)
     socket = assign(socket, :month, month_str)
+    socket = assign(socket, :tab, tab)
 
     {:noreply, socket}
   end
@@ -259,6 +264,9 @@ defmodule WiseReaderWeb.BaseLive do
     """
   end
 
+  defp parse_tab(tab) when tab in ["stats", "expenses"], do: {:ok, String.to_atom(tab)}
+  defp parse_tab(tab), do: {:error, "invalid tab #{tab}"}
+
   def category_selector(assigns) do
     assigns = Map.put(assigns, :categories, ["none"] ++ @categories)
 
@@ -272,8 +280,6 @@ defmodule WiseReaderWeb.BaseLive do
     </select>
     """
   end
-
-  ["september", "october", "november"]
 
   defp month_tab_classes() do
     "mx-5 block border-x-0 border-b-2 border-t-0 border-transparent px-7 pb-3.5 pt-4 text-xs font-medium uppercase leading-tight text-neutral-900 hover:isolate hover:border-transparent bg-sky-100 hover:bg-neutral-100 focus:isolate focus:border-transparent data-[te-nav-active]:border-primary data-[te-nav-active]:text-primary dark:text-neutral-900 dark:hover:bg-transparent dark:data-[te-nav-active]:border-primary-400 dark:data-[te-nav-active]:text-primary-400 cursor-pointer text-center"
