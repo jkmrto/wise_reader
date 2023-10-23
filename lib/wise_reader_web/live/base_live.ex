@@ -60,9 +60,7 @@ defmodule WiseReaderWeb.BaseLive do
     {:noreply, assign(socket, :transactions, transactions)}
   end
 
-  def handle_event("validate-import-bankinter", _value, socket) do
-    {:noreply, socket}
-  end
+  def handle_event("validate-import-bankinter", _value, socket), do: {:noreply, socket}
 
   def handle_event("import-bankinter", _value, socket) do
     filename =
@@ -113,10 +111,21 @@ defmodule WiseReaderWeb.BaseLive do
     ~H"""
     <.modal id="import-bankinter">
       <div class="flex flex-col">
-        <h2>This is a modal</h2>
-        <form id="upload-form" phx-submit="import-bankinter" phx-change="validate-import-bankinter">
-          <.live_file_input upload={@uploads.import_bankinter} />
-          <button type="submit">Upload</button>
+        <h2>Import Bankinter movements (from CSV)</h2>
+        <form
+          id="upload-form"
+          class="w-50"
+          phx-submit="import-bankinter"
+          phx-change="validate-import-bankinter"
+        >
+          <.live_file_input class="my-3" upload={@uploads.import_bankinter} />
+          <button
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 my-1 mx-10 w-32 rounded"
+            phx-click={JS.exec("data-cancel", to: "#import-bankinter")}
+            type="submit"
+          >
+            Upload
+          </button>
         </form>
       </div>
     </.modal>
@@ -126,7 +135,7 @@ defmodule WiseReaderWeb.BaseLive do
         phx-click="refresh"
         class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
       >
-        Refresh
+        Import TransferWise
       </button>
 
       <button
@@ -156,7 +165,7 @@ defmodule WiseReaderWeb.BaseLive do
     </div>
 
     <%= if @tab == :expenses  do %>
-      <div class="inline-block  sm:px-6">
+      <div class="inline-block sm:px-6 w-full">
         <div class="overflow-hidden">
           <table class="min-w-full">
             <thead class="bg-white border-b">
