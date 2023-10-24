@@ -4,7 +4,7 @@ defmodule WiseReader.Importers.WiseClient do
       "https://api.transferwise.com/v1/profiles/13675836/balance-statements/11835403/statement.json?currency=EUR&intervalStart=2023-01-01T00:00:00.000Z&intervalEnd=2024-01-01T00:00:00.000Z&type=COMPACT"
 
     # TODO: move this config/runtime.ex
-    token = System.get_env("TOKEN")
+    token = System.get_env("WISE_API_TOKEN")
     headers = [{"Authorization", "Bearer #{token}"}]
 
     resp = HTTPoison.get(url, headers)
@@ -26,7 +26,7 @@ defmodule WiseReader.Importers.WiseClient do
   end
 
   def sca(code_2fa) do
-    rsa_priv_key = ExPublicKey.load!("wise_private.pem")
+    rsa_priv_key = System.get_env("WISE_PRIVATE_KEY") |> Base.decode64!() |> ExPublicKey.loads!()
     {:ok, signature} = ExPublicKey.sign(code_2fa, rsa_priv_key)
 
     signature

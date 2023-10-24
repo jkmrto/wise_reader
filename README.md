@@ -16,3 +16,11 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
   * Docs: https://hexdocs.pm/phoenix
   * Forum: https://elixirforum.com/c/phoenix-forum
   * Source: https://github.com/phoenixframework/phoenix
+
+## Setup:
+
+The RSA private key required to sign the requests with Wise needs to be injected through the environment variable "WISE_PRIVATE_KEY". The private key has to be encoded as base64 like:
+
+```
+$ cat wise_private.pem | base64 
+```
