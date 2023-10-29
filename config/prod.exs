@@ -13,4 +13,9 @@ config :wise_reader, WiseReaderWeb.Endpoint,
 config :logger, level: :info
 
 # Runtime production configuration, including reading
-# of environment variables, is done on config/runtime.exs.
+# of environment variables, is done on config/runtime.exs
+
+config :wise_reader, WiseReader.Repo,
+    ssl: false,
+    socket_options: [:inet6],
+    pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
