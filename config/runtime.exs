@@ -21,11 +21,13 @@ if System.get_env("PHX_SERVER") do
 end
 
 if config_env() == :prod do
-  # The secret key base is used to sign/encrypt cookies and other secrets.
-  # A default value is used in config/dev.exs and config/test.exs but you
-  # want to use a different value for prod and you most likely don't want
-  # to check this value into version control, so we use an environment
-  # variable instead.
+  config :wise_reader, WiseReader.Repo,
+    database: System.get_env("DB_NAME"),
+    username: System.get_env("DB_USER"),
+    password: System.get_env("DB_PASS"),
+    hostname: System.get_env("DB_HOST"),
+    port: 5432
+
   secret_key_base =
     System.get_env("SECRET_KEY_BASE") ||
       raise """

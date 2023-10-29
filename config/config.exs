@@ -14,6 +14,9 @@ config :wise_reader, WiseReader.Repo,
   hostname: "localhost"
 
 config :wise_reader,
+  ecto_repos: [WiseReader.Repo]
+
+config :wise_reader,
   generators: [binary_id: true]
 
 # Configures the endpoint

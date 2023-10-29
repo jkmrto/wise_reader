@@ -24,3 +24,11 @@ The RSA private key required to sign the requests with Wise needs to be injected
 ```
 $ cat wise_private.pem | base64 
 ```
+
+## Release
+
+The release has been generated:
+
+```
+ mix phx.gen.release --docker
+```
