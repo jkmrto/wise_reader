@@ -9,5 +9,18 @@ services:
       POSTGRES_PASSWORD: pwd 
       POSTGRES_DB: wise_db_dev
     ports:
-      - "6543:5432"
+      - "5432:5432"
 
+  wise_reader:
+    image: wise_reader
+    container_name: db
+    environment:
+      SECRET_KEY_BASE: 25IzIXO+2SSaMEUE/I5KghJ2uWOh8I+C3b4oXmCafbdYDO/xjMHGn5zheNbkoCoq
+      DB_NAME: wise_db_dev
+      DB_USER: wise_user
+      DB_PASS: pwd
+      DB_HOST: postgres
+    ports:
+      - "4000:4000"
+    depends_on:
+      - postgres

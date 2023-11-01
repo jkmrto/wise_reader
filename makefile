@@ -18,3 +18,6 @@ scale-up:
 
 scale-down:
 	fly scale count 0
+
+docker-compose-up:
+	docker-compose -f docker-compose.wise-config.yml -f docker-compose.yml up
