@@ -16,6 +16,6 @@ config :logger, level: :info
 # of environment variables, is done on config/runtime.exs
 
 config :wise_reader, WiseReader.Repo,
-    ssl: false,
-    socket_options: [:inet6],
-    pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
+  ssl: false,
+  socket_options: [:inet6],
+  pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")

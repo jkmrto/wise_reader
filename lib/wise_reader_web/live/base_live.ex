@@ -12,7 +12,7 @@ defmodule WiseReaderWeb.BaseLive do
 
   @months [
     "january",
-    "feburary",
+    "february",
     "march",
     "april",
     "may",
@@ -167,7 +167,7 @@ defmodule WiseReaderWeb.BaseLive do
     </div>
 
     <div class="mt-10">
-      <.month_tabs_selector />
+      <.month_tabs_selector month={@month} />
     </div>
 
     <%= if @tab == :expenses  do %>
@@ -287,21 +287,44 @@ defmodule WiseReaderWeb.BaseLive do
   end
 
   def month_tabs_selector(assigns) do
+    # This is quite ugly, it would be good to refactor it at some point. 
+    # 'assigns.month' should be an 'int', maybe something like month_index.
+    {prev_month, current_month, next_month} =
+      case assigns.month do
+        "december" ->
+          {"november", "december", "january"}
+
+        "january" ->
+          {"december", "january", "february"}
+
+        other_month ->
+          {Enum.at(@months, @month_to_index[other_month] - 2), other_month,
+           Enum.at(@months, @month_to_index[other_month])}
+      end
+
+    assigns = assign(assigns, :prev_month, prev_month)
+    assigns = assign(assigns, :current_month, current_month)
+    assigns = assign(assigns, :next_month, next_month)
+
     ~H"""
     <ul class="flex list-none flex-row flex-wrap border-b-0 pl-0 ps-20" role="tablist" data-te-nav-ref>
       <li class="flex-2">
-        <a phx-click="change-month" phx-value-month="september" class={month_tab_classes()}>
-          September
+        <a phx-click="change-month" phx-value-month={@prev_month} class={month_tab_classes()}>
+          <%= @prev_month %>
         </a>
       </li>
       <li class="flex-1 flex justify-center">
-        <a phx-click="change-month" phx-value-month="october" class={"w-full " <> month_tab_classes()}>
-          October
+        <a
+          phx-click="change-month"
+          phx-value-month={@current_month}
+          class={"w-full " <> month_tab_classes()}
+        >
+          <%= @current_month %>
         </a>
       </li>
       <li class="flex-2">
-        <a phx-click="change-month" phx-value-month="november" class={month_tab_classes()}>
-          November
+        <a phx-click="change-month" phx-value-month={@next_month} class={month_tab_classes()}>
+          <%= @next_month %>
         </a>
       </li>
     </ul>
