@@ -190,7 +190,7 @@ defmodule WiseReaderWeb.BaseLive do
                   <.table_cell_body content={transaction.description} />
                   <.table_cell_body content={category_selector(%{transaction: transaction})} />
                   <.table_cell_body content={Decimal.to_string(transaction.amount)} />
-                  <.table_cell_body content={transaction.date.day} />
+                  <.table_cell_body content={"#{transaction.date.day}/#{transaction.date.month}"} />
                   <.table_cell_body content={capitalized_imported_from(transaction)} />
                 </tr>
               <% end %>

@@ -1,7 +1,7 @@
 defmodule WiseReader.Transactions.Transaction do
   use Ecto.Schema
 
-  @categories ["groceries", "gym", "rent", "transport", "coworking", "leisure"]
+  @categories ["groceries", "gym", "rent", "transport", "coworking", "leisure", "restaurants", "books", "shopping"]
   @valid_imported_from [:wise, :bankinter]
   @fields [:reference, :amount, :description, :category, :imported_from, :date]
 
