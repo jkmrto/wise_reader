@@ -7,7 +7,8 @@ defmodule WiseReaderWeb.BaseLive do
   alias WiseReader.Transactions.Wise
 
   @categories Transaction.categories()
-  @default_month 10
+  @default_month "november"
+  @default_tab :expenses
 
   @months [
     "january",
@@ -38,8 +39,8 @@ defmodule WiseReaderWeb.BaseLive do
   end
 
   def handle_params(params, _uri, socket) do
-    %{"month" => month_str, "tab" => tab} = params
-    {:ok, tab} = parse_tab(tab)
+    month_str = Map.get(params, "month", @default_month)
+    tab = get_tab(params)
 
     index_month = @month_to_index[month_str]
     transactions_per_month = Transactions.get_transactions_grouped_by_date()
@@ -264,8 +265,8 @@ defmodule WiseReaderWeb.BaseLive do
     """
   end
 
-  defp parse_tab(tab) when tab in ["stats", "expenses"], do: {:ok, String.to_atom(tab)}
-  defp parse_tab(tab), do: {:error, "invalid tab #{tab}"}
+  defp get_tab(%{"tab" => tab}) when tab in ["stats", "expenses"], do: String.to_atom(tab)
+  defp get_tab(_parmams), do: @default_tab
 
   def category_selector(assigns) do
     assigns = Map.put(assigns, :categories, ["none"] ++ @categories)

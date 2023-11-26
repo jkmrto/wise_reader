@@ -13,7 +13,6 @@ services:
 
   wise_reader:
     image: wise_reader
-    container_name: db
     environment:
       SECRET_KEY_BASE: 25IzIXO+2SSaMEUE/I5KghJ2uWOh8I+C3b4oXmCafbdYDO/xjMHGn5zheNbkoCoq
       DB_NAME: wise_db_dev

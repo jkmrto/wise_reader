@@ -1,5 +1,5 @@
 run:
-	iex -S mix phx.server
+	source .env; iex -S mix phx.server
 
 migrate:
 	mix ecto.migrate
@@ -16,8 +16,12 @@ port-forward-db:
 scale-up:
 	fly scale count 1
 
+# Suspend application
 scale-down:
 	fly scale count 0
+
+docker-compose-db-up:
+	docker-compose up  postgres -d
 
 docker-compose-up:
 	docker-compose -f docker-compose.wise-config.yml -f docker-compose.yml up
