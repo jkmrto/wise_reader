@@ -25,12 +25,10 @@ defmodule WiseReader.Transactions do
   def calculate_amount_per_category(nil), do: []
 
   def calculate_amount_per_category(transactions) do
-    IO.inspect(Enum.map(transactions, & &1.category), label: "categories")
-
     transactions
     |> Enum.group_by(& &1.category)
     |> Enum.map(fn {key, elements} ->
-      {key, Enum.map(elements, & &1.amount) |> Enum.reduce(&Decimal.add(&1, &2))}
+      {key, sum_amounts(elements)}
     end)
     |> Enum.map(fn
       {undefined, decimal_sum} when undefined in [nil, ""] ->
@@ -40,5 +38,11 @@ defmodule WiseReader.Transactions do
         [String.capitalize(category), Decimal.to_float(decimal_sum)]
     end)
     |> Enum.sort_by(fn [_category, amount] -> amount end, :desc)
+  end
+
+  def sum_amounts(elements) do
+    elements
+    |> Enum.map(& &1.amount)
+    |> Enum.reduce(&Decimal.add(&1, &2))
   end
 end
