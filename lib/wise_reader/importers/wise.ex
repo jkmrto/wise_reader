@@ -7,7 +7,6 @@ defmodule WiseReader.Transactions.Wise do
     "CONVERSION",
     "DEPOSIT",
     "MONEY_ADDED",
-    "TRANSFER",
     "UNKNOWN",
     "BALANCE CASHBACK"
   ]
@@ -31,7 +30,15 @@ defmodule WiseReader.Transactions.Wise do
     WiseReader.Repo.insert_all(Transaction, new_txs)
   end
 
-  def build_transactions_params_from_json(json) do
+  # We inject a custom description for TRANSFER type 
+  defp build_transactions_params_from_json(json = %{"details" => %{"type" => "TRANSFER"}}) do
+    paymentReference = json["details"]["paymentReference"]
+    json_description = json["details"]["description"]
+    description = "#{paymentReference} - #{json_description}"
+    build_transactions_params_from_json(json, description: description)
+  end
+
+  defp build_transactions_params_from_json(json, opts \\ []) do
     now = NaiveDateTime.truncate(NaiveDateTime.utc_now(), :second)
 
     with {:ok, date, 0} <- DateTime.from_iso8601(json["date"]) do
@@ -39,7 +46,7 @@ defmodule WiseReader.Transactions.Wise do
         date: DateTime.truncate(date, :second),
         amount: maybe_cast_float_to_decimal(json["amount"]["value"]),
         reference: json["referenceNumber"],
-        description: json["details"]["description"],
+        description: Keyword.get(opts, :description, json["details"]["description"]),
         imported_from: :wise,
         updated_at: now,
         inserted_at: now
